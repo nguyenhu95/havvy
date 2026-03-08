@@ -1,13 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Splash from './components/Splash';
+import LoginScreen from './components/Login';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [showSplash, setShowSplash] = useState(true);
+
+  if (showSplash) {
+    return <Splash onFinish={() => setShowSplash(false)} />;
+  }
+
+  return <LoginScreen onLoginSuccess={() => {}} onSignUpPress={() => {}} />;
 }
 
 const styles = StyleSheet.create({
