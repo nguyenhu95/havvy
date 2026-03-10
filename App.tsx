@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Splash from './components/Splash';
-import LoginScreen from './components/Login';
+import LoginScreen from './components/LoginScreen';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);

@@ -1,103 +1,116 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
 
 type Props = {
+  /** Called when the splash duration completes */
   onFinish: () => void;
+  /** How long to show the splash in milliseconds (default: 2000ms) */
+  duration?: number;
 };
 
-export default function Splash({ onFinish }: Props) {
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale = useRef(new Animated.Value(0.8)).current;
-  const textOpacity = useRef(new Animated.Value(0)).current;
-  const screenOpacity = useRef(new Animated.Value(1)).current;
 
+// =============================================================================
+// MAIN COMPONENT
+// =============================================================================
+
+export default function Splash({ onFinish, duration = 2000 }: Props) {
   useEffect(() => {
-    Animated.sequence([
-      // Fade in logo with scale
-      Animated.parallel([
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.spring(logoScale, {
-          toValue: 1,
-          friction: 5,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-      ]),
-      // Fade in text slightly after
-      Animated.timing(textOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      // Hold
-      Animated.delay(1000),
-      // Fade out entire screen
-      Animated.timing(screenOpacity, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onFinish());
-  }, []);
+    const timer = setTimeout(() => {
+      onFinish();
+    }, duration);
+
+    // Cleanup: cancel timer if component unmounts early
+    return () => clearTimeout(timer);
+  }, [onFinish, duration]);
 
   return (
-    <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
-      <Animated.View
-        style={[
-          styles.logoContainer,
-          { opacity: logoOpacity, transform: [{ scale: logoScale }] },
-        ]}
-      >
-        <View style={styles.iconCircle}>
-          <Text style={styles.iconEmoji}>🥬</Text>
-        </View>
-      </Animated.View>
+    <View style={styles.container}>
+      {/* Logo */}
+      <View style={styles.iconCircle}>
+        <Text style={styles.logoLeaf}>🥬</Text>
+      </View>
 
-      <Animated.View style={{ opacity: textOpacity }}>
-        <Text style={styles.appName}>Havvy</Text>
-        <Text style={styles.tagline}>Smart pantry, zero waste</Text>
-      </Animated.View>
-    </Animated.View>
+      {/* Text */}
+      <Text style={styles.appName}>Havvy</Text>
+      <Text style={styles.tagline}>Smart pantry, zero waste</Text>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.lockIcon}>🔒</Text>
+        <Text style={styles.footerText}>SECURE CLOUD SYNC</Text>
+      </View>
+    </View>
   );
 }
+
+// =============================================================================
+// STYLES
+// =============================================================================
+
+const COLORS = {
+  background: '#0d9488',
+  iconCircle: 'rgba(255, 255, 255, 0.15)',
+  white: '#ffffff',
+  tagline: '#99f6e4',
+  footerText: 'rgba(255, 255, 255, 0.7)',
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0d9488',
+    backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
-  },
-  logoContainer: {
-    alignItems: 'center',
   },
   iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.iconCircle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  leafShape: {
+    backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconEmoji: {
-    fontSize: 52,
+  leafVein: {
+    backgroundColor: COLORS.background,
   },
   appName: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: '700',
-    color: '#ffffff',
-    textAlign: 'center',
-    letterSpacing: 0.5,
+    color: COLORS.white,
+    letterSpacing: 1,
   },
   tagline: {
-    fontSize: 16,
-    color: '#99f6e4',
-    textAlign: 'center',
-    marginTop: 6,
+    fontSize: 18,
+    color: COLORS.tagline,
+    marginTop: 8,
   },
+  footer: {
+    position: 'absolute',
+    bottom: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  lockIcon: {
+    fontSize: 14,
+  },
+  footerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.footerText,
+    letterSpacing: 1.5,
+  },
+  logoLeaf: {
+    fontSize: 64
+  }
 });
