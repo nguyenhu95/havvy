@@ -8,12 +8,12 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
   ViewToken,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // =============================================================================
 // TYPE DEFINITIONS

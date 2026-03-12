@@ -16,14 +16,13 @@ import {
 // =============================================================================
 
 type Props = {
-  onSignIn: (email: string, password: string, rememberMe: boolean) => void;
-  onSignUp: () => void;
-  onForgotPassword: () => void;
-  onGoogleSignIn: () => void;
-  onAppleSignIn: () => void;
-  onPrivacyPolicy: () => void;
+  onBack: () => void;
+  onSignUp: (fullName: string, email: string, password: string) => void;
+  onSignIn: () => void;
+  onGoogleSignUp: () => void;
+  onAppleSignUp: () => void;
   onTermsOfService: () => void;
-  onSupport: () => void;
+  onPrivacyPolicy: () => void;
   isLoading?: boolean;
   error?: string;
 };
@@ -32,33 +31,40 @@ type Props = {
 // MAIN COMPONENT
 // =============================================================================
 
-export default function LoginScreen({
-  onSignIn,
+export default function SignUpScreen({
+  onBack,
   onSignUp,
-  onForgotPassword,
-  onGoogleSignIn,
-  onAppleSignIn,
-  onPrivacyPolicy,
+  onSignIn,
+  onGoogleSignUp,
+  onAppleSignUp,
   onTermsOfService,
-  onSupport,
+  onPrivacyPolicy,
   isLoading = false,
   error,
 }: Props) {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const handleSignIn = () => {
+  const handleCreateAccount = () => {
+    const trimmedName = fullName.trim();
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
-    if (!trimmedEmail || !trimmedPassword) {
+    if (!trimmedName || !trimmedEmail || !trimmedPassword || !agreedToTerms) {
       return;
     }
 
-    onSignIn(trimmedEmail, trimmedPassword, rememberMe);
+    onSignUp(trimmedName, trimmedEmail, trimmedPassword);
   };
+
+  const isFormValid =
+    fullName.trim().length > 0 &&
+    email.trim().length > 0 &&
+    password.trim().length > 0 &&
+    agreedToTerms;
 
   return (
     <KeyboardAvoidingView
@@ -74,26 +80,50 @@ export default function LoginScreen({
           <View style={styles.card}>
             {/* Header */}
             <View style={styles.header}>
-              <View style={styles.logoRow}>
-                <View style={styles.logoIcon}>
-                  <Text style={styles.logoLeaf}>🥬</Text>
-                </View>
-                <Text style={styles.brandName}>Havvy</Text>
-              </View>
-              <Text style={styles.welcomeTitle}>Welcome Back</Text>
+              <Pressable
+                onPress={onBack}
+                style={styles.backButton}
+                hitSlop={12}
+                disabled={isLoading}
+              >
+                <Text style={styles.backIcon}>←</Text>
+              </Pressable>
+              <Text style={styles.headerTitle}>Sign Up</Text>
+              <View style={styles.headerSpacer} />
+            </View>
+
+            {/* Welcome */}
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeTitle}>Create Account</Text>
               <Text style={styles.welcomeSubtitle}>
-                Please enter your details to sign in to your account.
+                Join Havvy and start your journey today.
               </Text>
             </View>
 
             {/* Form */}
             <View style={styles.form}>
+              {/* Full Name */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#94a3b8"
+                  value={fullName}
+                  onChangeText={setFullName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  autoComplete="name"
+                  editable={!isLoading}
+                />
+              </View>
+
               {/* Email */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Email Address</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="name@company.com"
+                  placeholder="name@example.com"
                   placeholderTextColor="#94a3b8"
                   value={email}
                   onChangeText={setEmail}
@@ -107,23 +137,18 @@ export default function LoginScreen({
 
               {/* Password */}
               <View style={styles.inputGroup}>
-                <View style={styles.passwordLabelRow}>
-                  <Text style={styles.label}>Password</Text>
-                  <Pressable onPress={onForgotPassword} disabled={isLoading}>
-                    <Text style={styles.forgotPassword}>Forgot password?</Text>
-                  </Pressable>
-                </View>
+                <Text style={styles.label}>Password</Text>
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="••••••••"
+                    placeholder="Create a password"
                     placeholderTextColor="#94a3b8"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                     autoCorrect={false}
-                    autoComplete="password"
+                    autoComplete="new-password"
                     editable={!isLoading}
                   />
                   <Pressable
@@ -138,19 +163,30 @@ export default function LoginScreen({
                 </View>
               </View>
 
-              {/* Remember Me */}
+              {/* Terms Checkbox */}
               <Pressable
-                style={styles.checkboxRow}
-                onPress={() => setRememberMe(!rememberMe)}
+                style={styles.termsRow}
+                onPress={() => setAgreedToTerms(!agreedToTerms)}
                 disabled={isLoading}
               >
                 <View
-                  style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+                  style={[
+                    styles.checkbox,
+                    agreedToTerms && styles.checkboxChecked,
+                  ]}
                 >
-                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                  {agreedToTerms && <Text style={styles.checkmark}>✓</Text>}
                 </View>
-                <Text style={styles.checkboxLabel}>
-                  Keep me signed in for 30 days
+                <Text style={styles.termsText}>
+                  By signing up, you agree to our{' '}
+                  <Text style={styles.termsLink} onPress={onTermsOfService}>
+                    Terms of Service
+                  </Text>{' '}
+                  and{' '}
+                  <Text style={styles.termsLink} onPress={onPrivacyPolicy}>
+                    Privacy Policy
+                  </Text>
+                  .
                 </Text>
               </Pressable>
 
@@ -161,28 +197,36 @@ export default function LoginScreen({
                 </View>
               )}
 
-              {/* Sign In Button */}
+              {/* Create Account Button */}
               <Pressable
                 style={({ pressed }) => [
-                  styles.signInButton,
-                  pressed && styles.signInButtonPressed,
-                  isLoading && styles.signInButtonDisabled,
+                  styles.createButton,
+                  pressed && styles.createButtonPressed,
+                  (!isFormValid || isLoading) && styles.createButtonDisabled,
                 ]}
-                onPress={handleSignIn}
-                disabled={isLoading}
+                onPress={handleCreateAccount}
+                disabled={!isFormValid || isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator color="#ffffff" size="small" />
                 ) : (
-                  <Text style={styles.signInButtonText}>Sign In</Text>
+                  <Text style={styles.createButtonText}>Create Account</Text>
                 )}
+              </Pressable>
+            </View>
+
+            {/* Sign In Link */}
+            <View style={styles.signInContainer}>
+              <Text style={styles.signInText}>Already have an account? </Text>
+              <Pressable onPress={onSignIn} disabled={isLoading}>
+                <Text style={styles.signInLink}>Sign In</Text>
               </Pressable>
             </View>
 
             {/* Divider */}
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR CONTINUE WITH</Text>
+              <Text style={styles.dividerText}>OR SIGN UP WITH</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -193,7 +237,7 @@ export default function LoginScreen({
                   styles.socialButton,
                   pressed && styles.socialButtonPressed,
                 ]}
-                onPress={onGoogleSignIn}
+                onPress={onGoogleSignUp}
                 disabled={isLoading}
               >
                 <Text style={styles.googleIcon}>G</Text>
@@ -205,34 +249,13 @@ export default function LoginScreen({
                   styles.socialButton,
                   pressed && styles.socialButtonPressed,
                 ]}
-                onPress={onAppleSignIn}
+                onPress={onAppleSignUp}
                 disabled={isLoading}
               >
                 <Text style={styles.appleIcon}></Text>
                 <Text style={styles.socialButtonText}>Apple</Text>
               </Pressable>
             </View>
-
-            {/* Sign Up Link */}
-            <View style={styles.signUpContainer}>
-              <Text style={styles.signUpText}>Don't have an account? </Text>
-              <Pressable onPress={onSignUp} disabled={isLoading}>
-                <Text style={styles.signUpLink}>Sign up for free</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Pressable onPress={onPrivacyPolicy}>
-              <Text style={styles.footerLink}>PRIVACY{'\n'}POLICY</Text>
-            </Pressable>
-            <Pressable onPress={onTermsOfService}>
-              <Text style={styles.footerLink}>TERMS OF{'\n'}SERVICE</Text>
-            </Pressable>
-            <Pressable onPress={onSupport}>
-              <Text style={styles.footerLink}>SUPPORT</Text>
-            </Pressable>
           </View>
         </View>
       </ScrollView>
@@ -284,30 +307,34 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   header: {
-    marginBottom: 24,
-  },
-  logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
-  logoIcon: {
+  backButton: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: COLORS.teal,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    backgroundColor: COLORS.background,
   },
-  logoLeaf: {
+  backIcon: {
     fontSize: 20,
+    color: COLORS.textPrimary,
   },
-  brandName: {
-    fontSize: 22,
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.textPrimary,
-    letterSpacing: 0.3,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  welcomeContainer: {
+    marginBottom: 24,
   },
   welcomeTitle: {
     fontSize: 28,
@@ -328,7 +355,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.textPrimary,
     marginBottom: 8,
   },
@@ -341,17 +368,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textPrimary,
     backgroundColor: COLORS.inputBackground,
-  },
-  passwordLabelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  forgotPassword: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.teal,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -374,20 +390,21 @@ const styles = StyleSheet.create({
   eyeIcon: {
     fontSize: 20,
   },
-  checkboxRow: {
+  termsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 20,
+    gap: 12,
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     borderWidth: 1.5,
     borderColor: COLORS.inputBorder,
-    borderRadius: 4,
-    marginRight: 10,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 2,
   },
   checkboxChecked: {
     backgroundColor: COLORS.teal,
@@ -395,12 +412,18 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
-  checkboxLabel: {
+  termsText: {
+    flex: 1,
     fontSize: 14,
     color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
+  termsLink: {
+    color: COLORS.teal,
+    fontWeight: '500',
   },
   errorContainer: {
     backgroundColor: COLORS.errorBackground,
@@ -413,23 +436,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
-  signInButton: {
+  createButton: {
     height: 52,
     backgroundColor: COLORS.teal,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  signInButtonPressed: {
+  createButtonPressed: {
     backgroundColor: COLORS.tealDark,
   },
-  signInButtonDisabled: {
-    opacity: 0.7,
+  createButtonDisabled: {
+    opacity: 0.5,
   },
-  signInButtonText: {
+  createButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  signInContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  signInText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  signInLink: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.teal,
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -443,19 +481,18 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     paddingHorizontal: 12,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
     color: COLORS.textMuted,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   socialButtonsRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
   },
   socialButton: {
     flex: 1,
-    height: 52,
+    height: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -478,35 +515,8 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   socialButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.textPrimary,
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  signUpText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  signUpLink: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.teal,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 24,
-    paddingHorizontal: 8,
-  },
-  footerLink: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: COLORS.textMuted,
-    letterSpacing: 0.3,
-    textAlign: 'center',
+    color: COLORS.textPrimary,
   },
 });
